@@ -1,0 +1,12 @@
+# Build artifacts
+build/gen_icon
+build/gen_icon.dSYM/
+build/AppIcon.iconset/
+build/AppIcon.icns
+build/dmg_staging/
+build/Inkwell.app/
+build/create_icon.py
+
+# macOS
+.DS_Store
+*.dmg
