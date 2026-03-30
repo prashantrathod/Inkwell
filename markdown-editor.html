@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Markdown Editor</title>
+<title>Inkwell</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;0,7..72,700;1,7..72,400&family=JetBrains+Mono:wght@400;500&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -22,7 +22,6 @@
     --editor-border: #332e29;
     --editor-text: #d4cdc4;
     --editor-text-dim: #7c7570;
-    --editor-gutter: #292420;
     --amber: #d4944c;
     --amber-soft: #c4874a;
     --amber-glow: rgba(212, 148, 76, 0.12);
@@ -37,6 +36,40 @@
     --shadow-tooltip: 0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2);
     --transition-fast: 0.12s ease;
     --transition-med: 0.2s ease;
+
+    /* Preview theme (light default) */
+    --preview-bg: var(--warm-white);
+    --preview-text: var(--ink);
+    --preview-text-soft: var(--ink-soft);
+    --preview-text-muted: var(--ink-muted);
+    --preview-text-ghost: var(--ink-ghost);
+    --preview-surface: var(--parchment);
+    --preview-surface-deep: var(--parchment-deep);
+    --preview-border: var(--parchment-dark);
+    --preview-link: var(--amber-soft);
+    --preview-code-bg: var(--parchment-deep);
+    --preview-pre-bg: var(--editor-bg);
+    --preview-pre-text: var(--editor-text);
+    --preview-pre-border: var(--editor-border);
+    --preview-scrollbar: var(--parchment-dark);
+  }
+
+  /* Dark preview theme */
+  body.preview-dark {
+    --preview-bg: #1c1917;
+    --preview-text: #d4cdc4;
+    --preview-text-soft: #b0a89e;
+    --preview-text-muted: #8a8078;
+    --preview-text-ghost: #6b6259;
+    --preview-surface: #231f1c;
+    --preview-surface-deep: #292420;
+    --preview-border: #332e29;
+    --preview-link: #d4944c;
+    --preview-code-bg: #292420;
+    --preview-pre-bg: #151210;
+    --preview-pre-text: #d4cdc4;
+    --preview-pre-border: #332e29;
+    --preview-scrollbar: #332e29;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -53,13 +86,121 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* ===== TAB BAR ===== */
+  .tab-bar {
+    display: flex;
+    align-items: end;
+    height: 36px;
+    padding: 0 8px;
+    background: var(--editor-bg);
+    border-bottom: 1px solid var(--editor-border);
+    flex-shrink: 0;
+    overflow-x: auto;
+    gap: 1px;
+    -webkit-app-region: drag;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+
+  .tab {
+    -webkit-app-region: no-drag;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 14px;
+    height: 30px;
+    background: transparent;
+    border: none;
+    color: var(--editor-text-dim);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    max-width: 180px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .tab:hover {
+    background: var(--editor-surface);
+    color: var(--editor-text);
+  }
+  .tab.active {
+    background: var(--editor-surface);
+    color: var(--editor-text);
+  }
+  .tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--amber);
+    border-radius: 1px 1px 0 0;
+  }
+
+  .tab-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+  }
+
+  .tab-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--amber);
+    flex-shrink: 0;
+    opacity: 0;
+  }
+  .tab.modified .tab-dot {
+    opacity: 1;
+  }
+
+  .tab-close {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+    pointer-events: auto;
+  }
+  .tab:hover .tab-close { opacity: 0.5; }
+  .tab-close:hover { opacity: 1 !important; background: rgba(255,255,255,0.08); }
+  .tab-close svg { width: 10px; height: 10px; }
+
+  .tab-add {
+    -webkit-app-region: no-drag;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: var(--editor-text-dim);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+    margin-left: 2px;
+  }
+  .tab-add:hover { background: var(--editor-surface); color: var(--editor-text); }
+  .tab-add svg { width: 14px; height: 14px; }
+
   /* ===== TOOLBAR ===== */
   .toolbar {
     display: flex;
     align-items: center;
     gap: 2px;
     padding: 0 10px;
-    height: 46px;
+    height: 42px;
     background: var(--editor-bg);
     border-bottom: 1px solid var(--editor-border);
     flex-shrink: 0;
@@ -77,567 +218,231 @@
     height: 28px;
     flex-shrink: 0;
   }
-
-  .toolbar-brand svg {
-    width: 18px;
-    height: 18px;
-    color: var(--amber);
-  }
-
+  .toolbar-brand svg { width: 16px; height: 16px; color: var(--amber); }
   .toolbar-brand .brand-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--editor-text);
-    letter-spacing: -0.01em;
-    white-space: nowrap;
+    font-size: 12px; font-weight: 600; color: var(--editor-text);
+    letter-spacing: -0.01em; white-space: nowrap;
   }
 
+  /* Editable file name */
   .file-name {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--editor-text-dim);
-    padding: 3px 10px;
-    background: var(--editor-surface);
+    padding: 3px 8px;
+    background: transparent;
     border-radius: 4px;
     border: 1px solid transparent;
-    cursor: default;
+    cursor: pointer;
     white-space: nowrap;
-    max-width: 180px;
+    max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
     margin-right: auto;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    transition: border-color var(--transition-fast);
+    transition: all var(--transition-fast);
+    outline: none;
   }
   .file-name:hover {
     border-color: var(--editor-border);
+    background: var(--editor-surface);
+  }
+  .file-name.editing {
+    border-color: var(--amber);
+    background: var(--editor-surface);
+    color: var(--editor-text);
+    cursor: text;
+    max-width: 300px;
   }
 
   .toolbar-sep {
-    width: 1px;
-    height: 20px;
-    background: var(--editor-border);
-    margin: 0 4px;
-    flex-shrink: 0;
+    width: 1px; height: 20px; background: var(--editor-border); margin: 0 4px; flex-shrink: 0;
   }
 
-  .toolbar-group {
-    display: flex;
-    gap: 1px;
-    flex-shrink: 0;
-  }
+  .toolbar-group { display: flex; gap: 1px; flex-shrink: 0; }
 
   /* ===== TOOLBAR BUTTONS ===== */
   .tb {
-    position: relative;
-    background: transparent;
-    border: none;
-    color: var(--editor-text-dim);
-    width: 32px;
-    height: 32px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--transition-fast);
-    flex-shrink: 0;
+    position: relative; background: transparent; border: none;
+    color: var(--editor-text-dim); width: 30px; height: 30px;
+    border-radius: var(--radius-sm); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all var(--transition-fast); flex-shrink: 0;
   }
-  .tb svg {
-    width: 16px;
-    height: 16px;
-    transition: transform var(--transition-fast);
-  }
-  .tb:hover {
-    background: var(--editor-surface);
-    color: var(--editor-text);
-  }
-  .tb:hover svg {
-    transform: scale(1.08);
-  }
-  .tb:active {
-    transform: scale(0.94);
-    background: var(--amber-glow);
-  }
-  .tb.active {
-    background: var(--amber-glow-strong);
-    color: var(--amber);
-  }
-
-  /* Wide buttons (text labels) */
-  .tb-wide {
-    width: auto;
-    padding: 0 10px;
-    gap: 5px;
-    font-size: 12px;
-    font-weight: 500;
-    font-family: 'DM Sans', sans-serif;
-  }
+  .tb svg { width: 15px; height: 15px; transition: transform var(--transition-fast); }
+  .tb:hover { background: var(--editor-surface); color: var(--editor-text); }
+  .tb:hover svg { transform: scale(1.08); }
+  .tb:active { transform: scale(0.94); background: var(--amber-glow); }
+  .tb.active { background: var(--amber-glow-strong); color: var(--amber); }
 
   /* ===== CUSTOM TOOLTIP ===== */
   .tip {
-    position: absolute;
-    bottom: -6px;
-    left: 50%;
+    position: absolute; bottom: -6px; left: 50%;
     transform: translateX(-50%) translateY(100%);
-    background: var(--tooltip-bg);
-    border: 1px solid var(--tooltip-border);
-    border-radius: 7px;
-    padding: 6px 10px;
-    white-space: nowrap;
-    pointer-events: none;
-    opacity: 0;
+    background: var(--tooltip-bg); border: 1px solid var(--tooltip-border);
+    border-radius: 7px; padding: 6px 10px; white-space: nowrap;
+    pointer-events: none; opacity: 0;
     transition: opacity 0.15s ease, transform 0.15s ease;
-    z-index: 1000;
-    box-shadow: var(--shadow-tooltip);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    z-index: 1000; box-shadow: var(--shadow-tooltip);
+    display: flex; align-items: center; gap: 8px;
   }
-
   .tip-label {
-    font-size: 11.5px;
-    font-weight: 500;
-    color: var(--editor-text);
-    font-family: 'DM Sans', sans-serif;
-    letter-spacing: 0.01em;
+    font-size: 11.5px; font-weight: 500; color: var(--editor-text);
+    font-family: 'DM Sans', sans-serif; letter-spacing: 0.01em;
   }
-
-  .tip-keys {
-    display: flex;
-    gap: 3px;
-    align-items: center;
-  }
-
+  .tip-keys { display: flex; gap: 3px; align-items: center; }
   .tip-key {
-    font-size: 10px;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 500;
-    color: var(--amber);
-    background: rgba(212, 148, 76, 0.1);
-    border: 1px solid rgba(212, 148, 76, 0.2);
-    border-radius: 4px;
-    padding: 1px 5px;
-    line-height: 1.5;
-    letter-spacing: 0.02em;
+    font-size: 10px; font-family: 'JetBrains Mono', monospace; font-weight: 500;
+    color: var(--amber); background: rgba(212, 148, 76, 0.1);
+    border: 1px solid rgba(212, 148, 76, 0.2); border-radius: 4px;
+    padding: 1px 5px; line-height: 1.5; letter-spacing: 0.02em;
   }
-
   .tb:hover .tip {
-    opacity: 1;
-    transform: translateX(-50%) translateY(calc(100% + 2px));
+    opacity: 1; transform: translateX(-50%) translateY(calc(100% + 2px));
     transition-delay: 0.4s;
   }
-
-  /* Prevent tooltip overflow on edges */
-  .toolbar-group:last-child .tip,
-  .tb:last-child .tip {
-    left: auto;
-    right: 0;
-    transform: translateX(0) translateY(100%);
+  .toolbar-group:last-child .tip, .tb:last-child .tip {
+    left: auto; right: 0; transform: translateX(0) translateY(100%);
   }
-  .toolbar-group:last-child .tb:hover .tip,
-  .tb:last-child:hover .tip {
+  .toolbar-group:last-child .tb:hover .tip, .tb:last-child:hover .tip {
     transform: translateX(0) translateY(calc(100% + 2px));
   }
 
   /* ===== STATUS BAR ===== */
   .statusbar {
-    display: flex;
-    align-items: center;
-    height: 26px;
-    padding: 0 12px;
-    background: var(--editor-surface);
-    border-top: 1px solid var(--editor-border);
-    flex-shrink: 0;
-    gap: 16px;
+    display: flex; align-items: center; height: 24px; padding: 0 12px;
+    background: var(--editor-surface); border-top: 1px solid var(--editor-border);
+    flex-shrink: 0; gap: 16px;
   }
-
   .status-item {
-    font-size: 11px;
-    color: var(--editor-text-dim);
+    font-size: 11px; color: var(--editor-text-dim);
     font-family: 'JetBrains Mono', monospace;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+    display: flex; align-items: center; gap: 5px;
   }
-
-  .status-item svg {
-    width: 12px;
-    height: 12px;
-    opacity: 0.6;
-  }
-
-  .status-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--green-soft);
-    flex-shrink: 0;
-  }
-
-  .status-right {
-    margin-left: auto;
-    display: flex;
-    gap: 16px;
-  }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-soft); flex-shrink: 0; }
+  .status-right { margin-left: auto; display: flex; gap: 16px; }
 
   /* ===== MAIN LAYOUT ===== */
-  .main {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
+  .main { display: flex; flex: 1; overflow: hidden; }
 
   /* ===== EDITOR PANE ===== */
-  .editor-pane {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    position: relative;
-  }
-
+  .editor-pane { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
   .pane-label {
-    position: absolute;
-    top: 12px;
-    right: 16px;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--editor-text-dim);
-    opacity: 0.4;
-    z-index: 2;
-    pointer-events: none;
+    position: absolute; top: 12px; right: 16px;
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--editor-text-dim); opacity: 0.4; z-index: 2; pointer-events: none;
     font-family: 'DM Sans', sans-serif;
   }
-
   #editor {
-    flex: 1;
-    width: 100%;
-    background: var(--editor-bg);
-    color: var(--editor-text);
-    border: none;
-    outline: none;
-    resize: none;
-    padding: 24px 28px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13.5px;
-    line-height: 1.75;
-    tab-size: 2;
-    overflow-y: auto;
-    caret-color: var(--amber);
+    flex: 1; width: 100%; background: var(--editor-bg); color: var(--editor-text);
+    border: none; outline: none; resize: none; padding: 24px 28px;
+    font-family: 'JetBrains Mono', monospace; font-size: 13.5px;
+    line-height: 1.75; tab-size: 2; overflow-y: auto; caret-color: var(--amber);
   }
-
-  #editor::placeholder {
-    color: var(--editor-text-dim);
-    opacity: 0.5;
-  }
-
-  #editor::selection {
-    background: var(--amber-glow-strong);
-  }
+  #editor::placeholder { color: var(--editor-text-dim); opacity: 0.5; }
+  #editor::selection { background: var(--amber-glow-strong); }
 
   /* ===== DIVIDER ===== */
   .divider {
-    width: 1px;
-    background: var(--editor-border);
-    position: relative;
-    flex-shrink: 0;
-    cursor: col-resize;
-    transition: background var(--transition-fast);
+    width: 1px; background: var(--editor-border); position: relative;
+    flex-shrink: 0; cursor: col-resize; transition: background var(--transition-fast);
   }
-  .divider::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: -4px;
-    right: -4px;
-    z-index: 10;
-  }
+  .divider::before { content: ''; position: absolute; top: 0; bottom: 0; left: -4px; right: -4px; z-index: 10; }
   .divider::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 3px;
-    height: 32px;
-    border-radius: 2px;
-    background: var(--editor-border);
-    opacity: 0;
-    transition: opacity var(--transition-med);
+    content: ''; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); width: 3px; height: 32px; border-radius: 2px;
+    background: var(--editor-border); opacity: 0; transition: opacity var(--transition-med);
   }
-  .divider:hover::after, .divider.dragging::after {
-    opacity: 1;
-    background: var(--amber-soft);
-  }
-  .divider:hover, .divider.dragging {
-    background: var(--amber);
-  }
+  .divider:hover::after, .divider.dragging::after { opacity: 1; background: var(--amber-soft); }
+  .divider:hover, .divider.dragging { background: var(--amber); }
 
   /* ===== PREVIEW PANE ===== */
   .preview-pane {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    background: var(--warm-white);
-    position: relative;
+    flex: 1; display: flex; flex-direction: column; min-width: 0;
+    background: var(--preview-bg); position: relative;
+    transition: background var(--transition-med);
   }
-
   #preview {
-    flex: 1;
-    padding: 32px 40px;
-    overflow-y: auto;
-    background: var(--warm-white);
-    color: var(--ink);
+    flex: 1; padding: 32px 40px; overflow-y: auto;
+    background: var(--preview-bg); color: var(--preview-text);
     font-family: 'Literata', Georgia, 'Times New Roman', serif;
-    font-size: 15.5px;
-    line-height: 1.78;
-    max-width: 100%;
+    font-size: 15.5px; line-height: 1.78; max-width: 100%;
+    transition: background var(--transition-med), color var(--transition-med);
   }
 
   /* ===== PREVIEW TYPOGRAPHY ===== */
-  #preview h1 {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 2em;
-    font-weight: 700;
-    margin: 1em 0 0.5em;
-    color: var(--ink);
-    letter-spacing: -0.025em;
-    line-height: 1.2;
-  }
+  #preview h1 { font-family: 'DM Sans', sans-serif; font-size: 2em; font-weight: 700; margin: 1em 0 0.5em; color: var(--preview-text); letter-spacing: -0.025em; line-height: 1.2; }
   #preview h1:first-child { margin-top: 0; }
-
-  #preview h2 {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1.5em;
-    font-weight: 600;
-    margin: 1.2em 0 0.4em;
-    color: var(--ink);
-    letter-spacing: -0.02em;
-    line-height: 1.25;
-    padding-bottom: 0.25em;
-    border-bottom: 1.5px solid var(--parchment-dark);
-  }
-
-  #preview h3 {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1.2em;
-    font-weight: 600;
-    margin: 1em 0 0.3em;
-    color: var(--ink-soft);
-    letter-spacing: -0.01em;
-  }
-
-  #preview h4, #preview h5, #preview h6 {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1em;
-    font-weight: 600;
-    margin: 0.8em 0 0.3em;
-    color: var(--ink-muted);
-  }
-
+  #preview h2 { font-family: 'DM Sans', sans-serif; font-size: 1.5em; font-weight: 600; margin: 1.2em 0 0.4em; color: var(--preview-text); letter-spacing: -0.02em; line-height: 1.25; padding-bottom: 0.25em; border-bottom: 1.5px solid var(--preview-border); }
+  #preview h3 { font-family: 'DM Sans', sans-serif; font-size: 1.2em; font-weight: 600; margin: 1em 0 0.3em; color: var(--preview-text-soft); }
+  #preview h4, #preview h5, #preview h6 { font-family: 'DM Sans', sans-serif; font-size: 1em; font-weight: 600; margin: 0.8em 0 0.3em; color: var(--preview-text-muted); }
   #preview p { margin: 0.65em 0; }
-
-  #preview a {
-    color: var(--amber-soft);
-    text-decoration: underline;
-    text-decoration-color: rgba(196, 135, 74, 0.3);
-    text-underline-offset: 2px;
-    transition: text-decoration-color var(--transition-fast);
-  }
-  #preview a:hover {
-    text-decoration-color: var(--amber-soft);
-  }
-
-  #preview strong { font-weight: 600; color: var(--ink); }
-
-  #preview blockquote {
-    border-left: 3px solid var(--amber);
-    margin: 1.2em 0;
-    padding: 0.6em 1.2em;
-    background: var(--parchment);
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-    color: var(--ink-soft);
-    font-style: italic;
-  }
-
-  #preview code {
-    font-family: 'JetBrains Mono', monospace;
-    background: var(--parchment-deep);
-    padding: 0.12em 0.4em;
-    border-radius: 4px;
-    font-size: 0.85em;
-    color: var(--ink-soft);
-  }
-
-  #preview pre {
-    background: var(--editor-bg);
-    color: var(--editor-text);
-    padding: 18px 22px;
-    border-radius: var(--radius);
-    overflow-x: auto;
-    margin: 1.2em 0;
-    line-height: 1.6;
-    border: 1px solid var(--editor-border);
-  }
-  #preview pre code {
-    background: none;
-    padding: 0;
-    border-radius: 0;
-    color: inherit;
-    font-size: 0.88em;
-  }
-
+  #preview a { color: var(--preview-link); text-decoration: underline; text-decoration-color: rgba(196, 135, 74, 0.3); text-underline-offset: 2px; }
+  #preview a:hover { text-decoration-color: var(--preview-link); }
+  #preview strong { font-weight: 600; color: var(--preview-text); }
+  #preview blockquote { border-left: 3px solid var(--amber); margin: 1.2em 0; padding: 0.6em 1.2em; background: var(--preview-surface); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; color: var(--preview-text-soft); font-style: italic; }
+  #preview code { font-family: 'JetBrains Mono', monospace; background: var(--preview-code-bg); padding: 0.12em 0.4em; border-radius: 4px; font-size: 0.85em; color: var(--preview-text-soft); }
+  #preview pre { background: var(--preview-pre-bg); color: var(--preview-pre-text); padding: 18px 22px; border-radius: var(--radius); overflow-x: auto; margin: 1.2em 0; line-height: 1.6; border: 1px solid var(--preview-pre-border); }
+  #preview pre code { background: none; padding: 0; border-radius: 0; color: inherit; font-size: 0.88em; }
   #preview ul, #preview ol { margin: 0.65em 0; padding-left: 1.6em; }
   #preview li { margin: 0.3em 0; }
-  #preview li::marker { color: var(--ink-ghost); }
-
-  #preview table {
-    border-collapse: collapse;
-    margin: 1.2em 0;
-    width: 100%;
-    font-size: 0.92em;
-  }
-  #preview th, #preview td {
-    border: 1px solid var(--parchment-dark);
-    padding: 9px 14px;
-    text-align: left;
-  }
-  #preview th {
-    background: var(--parchment);
-    font-weight: 600;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.9em;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--ink-muted);
-  }
-  #preview tr:nth-child(even) { background: var(--parchment); }
-
-  #preview hr {
-    border: none;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--parchment-dark), transparent);
-    margin: 2em 0;
-  }
-
-  #preview img {
-    max-width: 100%;
-    border-radius: var(--radius);
-    margin: 0.8em 0;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  }
-
-  #preview input[type="checkbox"] {
-    margin-right: 6px;
-    accent-color: var(--amber);
-    transform: scale(1.1);
-  }
+  #preview li::marker { color: var(--preview-text-ghost); }
+  #preview table { border-collapse: collapse; margin: 1.2em 0; width: 100%; font-size: 0.92em; }
+  #preview th, #preview td { border: 1px solid var(--preview-border); padding: 9px 14px; text-align: left; }
+  #preview th { background: var(--preview-surface); font-weight: 600; font-family: 'DM Sans', sans-serif; font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.04em; color: var(--preview-text-muted); }
+  #preview tr:nth-child(even) { background: var(--preview-surface); }
+  #preview hr { border: none; height: 1px; background: linear-gradient(90deg, transparent, var(--preview-border), transparent); margin: 2em 0; }
+  #preview img { max-width: 100%; border-radius: var(--radius); margin: 0.8em 0; }
+  #preview input[type="checkbox"] { margin-right: 6px; accent-color: var(--amber); transform: scale(1.1); }
 
   /* ===== SCROLLBARS ===== */
   ::-webkit-scrollbar { width: 7px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb {
-    background: var(--editor-border);
-    border-radius: 4px;
-  }
+  ::-webkit-scrollbar-thumb { background: var(--editor-border); border-radius: 4px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--ink-ghost); }
-
-  #preview::-webkit-scrollbar-thumb { background: var(--parchment-dark); }
-  #preview::-webkit-scrollbar-thumb:hover { background: #c4bdb4; }
+  #preview::-webkit-scrollbar-thumb { background: var(--preview-scrollbar); }
 
   /* ===== VIEW MODES ===== */
-  .main.editor-only .preview-pane,
-  .main.editor-only .divider { display: none; }
-  .main.preview-only .editor-pane,
-  .main.preview-only .divider { display: none; }
-
-  /* ===== FILE INPUT ===== */
-  #file-input { display: none; }
+  .main.editor-only .preview-pane, .main.editor-only .divider { display: none; }
+  .main.preview-only .editor-pane, .main.preview-only .divider { display: none; }
 
   /* ===== TOAST ===== */
   .toast {
-    position: fixed;
-    bottom: 40px;
-    left: 50%;
+    position: fixed; bottom: 40px; left: 50%;
     transform: translateX(-50%) translateY(20px);
-    background: var(--tooltip-bg);
-    color: var(--editor-text);
-    padding: 10px 20px;
-    border-radius: var(--radius);
-    font-size: 13px;
-    font-weight: 500;
-    border: 1px solid var(--tooltip-border);
-    box-shadow: var(--shadow-tooltip);
-    opacity: 0;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    z-index: 200;
-    pointer-events: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    background: var(--tooltip-bg); color: var(--editor-text);
+    padding: 10px 20px; border-radius: var(--radius); font-size: 13px; font-weight: 500;
+    border: 1px solid var(--tooltip-border); box-shadow: var(--shadow-tooltip);
+    opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 200; pointer-events: none; display: flex; align-items: center; gap: 8px;
   }
-  .toast svg {
-    width: 16px;
-    height: 16px;
-    color: var(--green-soft);
-    flex-shrink: 0;
-  }
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+  .toast svg { width: 16px; height: 16px; color: var(--green-soft); flex-shrink: 0; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   /* ===== EMPTY STATE ===== */
-  .preview-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: var(--ink-ghost);
-    text-align: center;
-    padding: 40px;
-  }
-  .preview-empty svg {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 16px;
-    opacity: 0.3;
-  }
-  .preview-empty p {
-    font-size: 14px;
-    font-family: 'DM Sans', sans-serif;
-    opacity: 0.5;
-  }
+  .preview-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--preview-text-ghost); text-align: center; padding: 40px; }
+  .preview-empty svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: 0.3; }
+  .preview-empty p { font-size: 14px; font-family: 'DM Sans', sans-serif; opacity: 0.5; }
 
   /* ===== ANIMATIONS ===== */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
   .main { animation: fadeIn 0.4s ease; }
 
-  /* ===== FOCUS MODE INDICATOR ===== */
   .editor-pane::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 40px;
-    background: linear-gradient(transparent, var(--editor-bg));
-    pointer-events: none;
-    z-index: 1;
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40px;
+    background: linear-gradient(transparent, var(--editor-bg)); pointer-events: none; z-index: 1;
   }
+
+  #file-input { display: none; }
 </style>
 </head>
 <body>
+
+<!-- ===== TAB BAR ===== -->
+<div class="tab-bar" id="tab-bar">
+  <button class="tab-add" onclick="addTab()" title="New Tab (⌘T)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  </button>
+</div>
 
 <!-- ===== TOOLBAR ===== -->
 <div class="toolbar">
@@ -648,7 +453,7 @@
     <span class="brand-name">Inkwell</span>
   </div>
 
-  <span class="file-name" id="file-name">Untitled.md</span>
+  <span class="file-name" id="file-name" onclick="startRename()" title="Click to rename">Untitled.md</span>
 
   <div class="toolbar-sep"></div>
 
@@ -752,7 +557,18 @@
     </button>
     <button class="tb" onclick="exportHTML()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      <span class="tip"><span class="tip-label">Export HTML</span></span>
+      <span class="tip"><span class="tip-label">Export HTML</span><span class="tip-keys"><span class="tip-key">&#8984;E</span></span></span>
+    </button>
+  </div>
+
+  <div class="toolbar-sep"></div>
+
+  <!-- Dark mode toggle -->
+  <div class="toolbar-group">
+    <button class="tb" id="btn-dark-toggle" onclick="togglePreviewDarkMode()">
+      <svg id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      <svg id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <span class="tip"><span class="tip-label">Dark Preview</span><span class="tip-keys"><span class="tip-key">&#8984;D</span></span></span>
     </button>
   </div>
 
@@ -783,17 +599,14 @@
   </div>
   <div class="divider" id="divider"></div>
   <div class="preview-pane">
-    <span class="pane-label" style="color: var(--ink-ghost);">Preview</span>
+    <span class="pane-label" style="color: var(--preview-text-ghost);">Preview</span>
     <div id="preview"></div>
   </div>
 </div>
 
 <!-- ===== STATUS BAR ===== -->
 <div class="statusbar">
-  <div class="status-item">
-    <span class="status-dot"></span>
-    <span>Ready</span>
-  </div>
+  <div class="status-item"><span class="status-dot"></span><span id="status-text">Ready</span></div>
   <div class="status-right">
     <div class="status-item" id="cursor-pos">Ln 1, Col 1</div>
     <div class="status-item" id="word-count">0 words</div>
@@ -813,7 +626,10 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <script>
-// === Fallback markdown parser ===
+// ─── Detect native app vs browser ────────────────────────────
+const isNativeApp = !!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.nativeOpen);
+
+// ─── Fallback markdown parser ────────────────────────────────
 function fallbackParse(md) {
   let html = md
     .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
@@ -839,18 +655,18 @@ function fallbackParse(md) {
   return '<p>' + html + '</p>';
 }
 
-// === DOM refs ===
-const editor = document.getElementById('editor');
+// ─── DOM refs ────────────────────────────────────────────────
+const editorEl = document.getElementById('editor');
 const preview = document.getElementById('preview');
 const mainEl = document.getElementById('main');
 const wordCountEl = document.getElementById('word-count');
 const cursorPosEl = document.getElementById('cursor-pos');
 const fileNameEl = document.getElementById('file-name');
 const fileInput = document.getElementById('file-input');
+const tabBar = document.getElementById('tab-bar');
+const statusText = document.getElementById('status-text');
 
-let currentFileName = 'Untitled.md';
 let markedAvailable = false;
-
 function initMarked() {
   if (typeof marked !== 'undefined') {
     markedAvailable = true;
@@ -864,62 +680,222 @@ function parseMarkdown(text) {
   return markedAvailable ? marked.parse(text) : fallbackParse(text);
 }
 
-// === Live preview ===
+// ─── Tab system ──────────────────────────────────────────────
+let tabs = [];
+let activeTabId = null;
+let tabIdCounter = 0;
+
+function createTabData(name, content, filePath) {
+  return {
+    id: ++tabIdCounter,
+    name: name || 'Untitled.md',
+    content: content || '',
+    filePath: filePath || null,
+    scrollTop: 0,
+    cursorStart: 0,
+    cursorEnd: 0,
+    modified: false
+  };
+}
+
+function addTab(name, content, filePath) {
+  const tab = createTabData(name, content, filePath);
+  tabs.push(tab);
+  switchTab(tab.id);
+  renderTabs();
+  return tab;
+}
+
+function closeTab(id, event) {
+  if (event) { event.stopPropagation(); }
+  if (tabs.length <= 1) return; // Keep at least one tab
+  const idx = tabs.findIndex(t => t.id === id);
+  if (idx === -1) return;
+  tabs.splice(idx, 1);
+  if (activeTabId === id) {
+    const newIdx = Math.min(idx, tabs.length - 1);
+    switchTab(tabs[newIdx].id);
+  }
+  renderTabs();
+}
+
+function switchTab(id) {
+  // Save current tab state
+  if (activeTabId !== null) {
+    const current = tabs.find(t => t.id === activeTabId);
+    if (current) {
+      current.content = editorEl.value;
+      current.scrollTop = editorEl.scrollTop;
+      current.cursorStart = editorEl.selectionStart;
+      current.cursorEnd = editorEl.selectionEnd;
+    }
+  }
+
+  activeTabId = id;
+  const tab = tabs.find(t => t.id === id);
+  if (!tab) return;
+
+  editorEl.value = tab.content;
+  editorEl.scrollTop = tab.scrollTop;
+  editorEl.selectionStart = tab.cursorStart;
+  editorEl.selectionEnd = tab.cursorEnd;
+  fileNameEl.textContent = tab.name;
+  statusText.textContent = tab.filePath || 'Ready';
+  updatePreview();
+  updateCursorPos();
+  renderTabs();
+  editorEl.focus();
+}
+
+function renderTabs() {
+  // Remove existing tab buttons (keep the add button)
+  const addBtn = tabBar.querySelector('.tab-add');
+  tabBar.querySelectorAll('.tab').forEach(el => el.remove());
+
+  tabs.forEach(tab => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (tab.id === activeTabId ? ' active' : '') + (tab.modified ? ' modified' : '');
+    btn.onclick = () => switchTab(tab.id);
+    btn.innerHTML = `
+      <span class="tab-dot"></span>
+      <span class="tab-name">${escapeHtml(tab.name)}</span>
+      <span class="tab-close" onclick="closeTab(${tab.id}, event)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+      </span>
+    `;
+    tabBar.insertBefore(btn, addBtn);
+  });
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function getActiveTab() {
+  return tabs.find(t => t.id === activeTabId);
+}
+
+// ─── Editable filename ──────────────────────────────────────
+function startRename() {
+  const el = fileNameEl;
+  el.contentEditable = true;
+  el.classList.add('editing');
+
+  // Select just the name part (before .md)
+  const text = el.textContent;
+  const range = document.createRange();
+  const sel = window.getSelection();
+  range.selectNodeContents(el);
+
+  const dotIdx = text.lastIndexOf('.');
+  if (dotIdx > 0) {
+    const textNode = el.firstChild;
+    range.setStart(textNode, 0);
+    range.setEnd(textNode, dotIdx);
+  }
+  sel.removeAllRanges();
+  sel.addRange(range);
+
+  function finishRename() {
+    el.contentEditable = false;
+    el.classList.remove('editing');
+    let newName = el.textContent.trim();
+    if (!newName) newName = 'Untitled.md';
+    if (!newName.includes('.')) newName += '.md';
+    el.textContent = newName;
+
+    const tab = getActiveTab();
+    if (tab) {
+      tab.name = newName;
+      renderTabs();
+    }
+    el.removeEventListener('blur', finishRename);
+    el.removeEventListener('keydown', handleRenameKey);
+  }
+
+  function handleRenameKey(e) {
+    if (e.key === 'Enter') { e.preventDefault(); finishRename(); }
+    if (e.key === 'Escape') { el.textContent = getActiveTab()?.name || 'Untitled.md'; finishRename(); }
+  }
+
+  el.addEventListener('blur', finishRename);
+  el.addEventListener('keydown', handleRenameKey);
+}
+
+// ─── Live preview ────────────────────────────────────────────
 let updateTimer;
 function updatePreview() {
   clearTimeout(updateTimer);
   updateTimer = setTimeout(() => {
-    const text = editor.value;
+    const text = editorEl.value;
     if (text.trim()) {
       preview.innerHTML = parseMarkdown(text);
     } else {
       preview.innerHTML = '<div class="preview-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><p>Your preview will appear here</p></div>';
     }
     updateWordCount(text);
-    localStorage.setItem('md-editor-content', text);
+
+    // Mark tab as modified
+    const tab = getActiveTab();
+    if (tab) {
+      tab.content = text;
+      tab.modified = true;
+      renderTabs();
+    }
   }, 80);
 }
 
 function updateWordCount(text) {
   const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-  const chars = text.length;
-  wordCountEl.textContent = `${words} words \u00B7 ${chars} chars`;
+  wordCountEl.textContent = `${words} words \u00B7 ${text.length} chars`;
 }
 
 function updateCursorPos() {
-  const val = editor.value;
-  const pos = editor.selectionStart;
+  const val = editorEl.value;
+  const pos = editorEl.selectionStart;
   const lines = val.substring(0, pos).split('\n');
-  const ln = lines.length;
-  const col = lines[lines.length - 1].length + 1;
-  cursorPosEl.textContent = `Ln ${ln}, Col ${col}`;
+  cursorPosEl.textContent = `Ln ${lines.length}, Col ${lines[lines.length - 1].length + 1}`;
 }
 
-editor.addEventListener('input', updatePreview);
-editor.addEventListener('input', updateCursorPos);
-editor.addEventListener('click', updateCursorPos);
-editor.addEventListener('keyup', updateCursorPos);
+editorEl.addEventListener('input', updatePreview);
+editorEl.addEventListener('input', updateCursorPos);
+editorEl.addEventListener('click', updateCursorPos);
+editorEl.addEventListener('keyup', updateCursorPos);
 
-// Tab support
-editor.addEventListener('keydown', (e) => {
+// Tab key
+editorEl.addEventListener('keydown', (e) => {
   if (e.key === 'Tab') {
     e.preventDefault();
-    const start = editor.selectionStart;
-    const end = editor.selectionEnd;
-    editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
-    editor.selectionStart = editor.selectionEnd = start + 2;
+    const start = editorEl.selectionStart;
+    const end = editorEl.selectionEnd;
+    editorEl.value = editorEl.value.substring(0, start) + '  ' + editorEl.value.substring(end);
+    editorEl.selectionStart = editorEl.selectionEnd = start + 2;
     updatePreview();
   }
 });
 
-// === Toolbar insert ===
-function insertMarkdown(type) {
-  const start = editor.selectionStart;
-  const end = editor.selectionEnd;
-  const selected = editor.value.substring(start, end);
-  let before = '', after = '', replacement = '';
+// ─── Dark mode toggle ───────────────────────────────────────
+let previewDark = false;
 
-  const lineStart = editor.value.lastIndexOf('\n', start - 1) + 1;
+function togglePreviewDarkMode() {
+  previewDark = !previewDark;
+  document.body.classList.toggle('preview-dark', previewDark);
+  document.getElementById('icon-moon').style.display = previewDark ? 'none' : '';
+  document.getElementById('icon-sun').style.display = previewDark ? '' : 'none';
+  document.getElementById('btn-dark-toggle').classList.toggle('active', previewDark);
+  localStorage.setItem('md-preview-dark', previewDark ? '1' : '0');
+  showToast(previewDark ? 'Dark preview enabled' : 'Light preview enabled');
+}
+
+// ─── Markdown insert ─────────────────────────────────────────
+function insertMarkdown(type) {
+  const start = editorEl.selectionStart;
+  const end = editorEl.selectionEnd;
+  const selected = editorEl.value.substring(start, end);
+  let before = '', after = '', replacement = '';
+  const lineStart = editorEl.value.lastIndexOf('\n', start - 1) + 1;
   const atLineStart = start === lineStart;
 
   switch(type) {
@@ -941,55 +917,126 @@ function insertMarkdown(type) {
     case 'table': before = '\n'; after = '';
       replacement = '| Header 1 | Header 2 | Header 3 |\n| -------- | -------- | -------- |\n| Cell 1   | Cell 2   | Cell 3   |\n| Cell 4   | Cell 5   | Cell 6   |'; break;
   }
-
   const newText = before + replacement + after;
-  editor.value = editor.value.substring(0, start) + newText + editor.value.substring(end);
-  editor.selectionStart = start + before.length;
-  editor.selectionEnd = start + before.length + replacement.length;
-  editor.focus();
+  editorEl.value = editorEl.value.substring(0, start) + newText + editorEl.value.substring(end);
+  editorEl.selectionStart = start + before.length;
+  editorEl.selectionEnd = start + before.length + replacement.length;
+  editorEl.focus();
   updatePreview();
 }
 
-// === View modes ===
+// ─── View modes ──────────────────────────────────────────────
 function setView(mode) {
   mainEl.className = 'main ' + mode;
-  document.querySelectorAll('.tb[id^="btn-"]').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tb[id^="btn-"]').forEach(b => {
+    if (b.id !== 'btn-dark-toggle') b.classList.remove('active');
+  });
   const btnId = mode === 'split' ? 'btn-split' : mode === 'editor-only' ? 'btn-editor' : 'btn-preview';
   document.getElementById(btnId).classList.add('active');
   localStorage.setItem('md-editor-view', mode);
 }
 
-// === File operations ===
-function openFile() { fileInput.click(); }
+// ─── File operations (native bridge + browser fallback) ─────
+function openFile() {
+  if (isNativeApp) {
+    window.webkit.messageHandlers.nativeOpen.postMessage({});
+  } else {
+    fileInput.click();
+  }
+}
 
-fileInput.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    editor.value = ev.target.result;
-    currentFileName = file.name;
-    fileNameEl.textContent = file.name;
+// Called from Swift when a file is opened via native dialog
+function nativeDidOpenFile(content, fileName, filePath) {
+  // Check if there's an empty untitled tab to reuse
+  const active = getActiveTab();
+  if (active && !active.content.trim() && !active.filePath && active.name === 'Untitled.md') {
+    active.content = content;
+    active.name = fileName;
+    active.filePath = filePath;
+    active.modified = false;
+    editorEl.value = content;
+    fileNameEl.textContent = fileName;
+    statusText.textContent = filePath;
     updatePreview();
-    showToast('Opened ' + file.name);
-  };
-  reader.readAsText(file);
-  fileInput.value = '';
-});
+    renderTabs();
+  } else {
+    addTab(fileName, content, filePath);
+  }
+  showToast('Opened ' + fileName);
+}
 
 function saveFile() {
-  const blob = new Blob([editor.value], { type: 'text/markdown' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = currentFileName;
-  a.click();
-  URL.revokeObjectURL(a.href);
-  showToast('Saved ' + currentFileName);
+  const tab = getActiveTab();
+  if (!tab) return;
+
+  if (isNativeApp) {
+    window.webkit.messageHandlers.nativeSave.postMessage({
+      content: editorEl.value,
+      fileName: tab.name
+    });
+  } else {
+    // Browser fallback
+    const blob = new Blob([editorEl.value], { type: 'text/markdown' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = tab.name;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    tab.modified = false;
+    renderTabs();
+    showToast('Saved ' + tab.name);
+  }
+}
+
+// Called from Swift when file is saved
+function nativeDidSaveFile(fileName, filePath) {
+  const tab = getActiveTab();
+  if (tab) {
+    tab.name = fileName;
+    tab.filePath = filePath;
+    tab.modified = false;
+    fileNameEl.textContent = fileName;
+    statusText.textContent = filePath;
+    renderTabs();
+  }
+  showToast('Saved to ' + filePath);
+}
+
+// Triggered by Swift menu
+function triggerNativeSave() {
+  saveFile();
 }
 
 function exportHTML() {
-  const htmlContent = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>${currentFileName}</title>
+  const tab = getActiveTab();
+  if (!tab) return;
+  const htmlContent = buildExportHTML();
+
+  if (isNativeApp) {
+    window.webkit.messageHandlers.nativeExport.postMessage({
+      content: htmlContent,
+      fileName: tab.name
+    });
+  } else {
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = tab.name.replace(/\.md$/, '') + '.html';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast('Exported as HTML');
+  }
+}
+
+function triggerNativeExport() {
+  exportHTML();
+}
+
+function buildExportHTML() {
+  const tab = getActiveTab();
+  const title = tab ? tab.name : 'Untitled';
+  return `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>${title}</title>
 <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
 body { font-family: 'Literata', Georgia, serif; max-width: 720px; margin: 48px auto; padding: 0 24px; line-height: 1.78; color: #1a1816; font-size: 15.5px; }
@@ -1002,31 +1049,34 @@ pre code { background: none; padding: 0; }
 blockquote { border-left: 3px solid #d4944c; padding: 0.6em 1.2em; background: #f7f3ee; margin: 1.2em 0; border-radius: 0 5px 5px 0; font-style: italic; color: #3d3833; }
 table { border-collapse: collapse; width: 100%; margin: 1.2em 0; }
 th, td { border: 1px solid #e6dfd5; padding: 9px 14px; text-align: left; }
-th { background: #f7f3ee; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.04em; color: #6b6259; }
+th { background: #f7f3ee; font-family: 'DM Sans', sans-serif; font-weight: 600; }
 img { max-width: 100%; border-radius: 8px; }
 a { color: #c4874a; }
 hr { border: none; height: 1px; background: linear-gradient(90deg, transparent, #e6dfd5, transparent); margin: 2em 0; }
 </style></head><body>${preview.innerHTML}</body></html>`;
-
-  const blob = new Blob([htmlContent], { type: 'text/html' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = currentFileName.replace(/\.md$/, '') + '.html';
-  a.click();
-  URL.revokeObjectURL(a.href);
-  showToast('Exported as HTML');
 }
 
-// === Toast ===
+// Browser fallback for file input
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    nativeDidOpenFile(ev.target.result, file.name, null);
+  };
+  reader.readAsText(file);
+  fileInput.value = '';
+});
+
+// ─── Toast ───────────────────────────────────────────────────
 function showToast(msg) {
   const toast = document.getElementById('toast');
-  const toastMsg = document.getElementById('toast-msg');
-  toastMsg.textContent = msg;
+  document.getElementById('toast-msg').textContent = msg;
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 2200);
 }
 
-// === Keyboard shortcuts ===
+// ─── Keyboard shortcuts ─────────────────────────────────────
 document.addEventListener('keydown', (e) => {
   if (e.metaKey || e.ctrlKey) {
     switch(e.key) {
@@ -1034,8 +1084,11 @@ document.addEventListener('keydown', (e) => {
       case 'o': e.preventDefault(); openFile(); break;
       case 'b': e.preventDefault(); insertMarkdown('bold'); break;
       case 'i': e.preventDefault(); insertMarkdown('italic'); break;
-      case 'e': e.preventDefault(); insertMarkdown('code'); break;
+      case 'e': e.preventDefault(); exportHTML(); break;
       case 'k': e.preventDefault(); insertMarkdown('link'); break;
+      case 'd': e.preventDefault(); togglePreviewDarkMode(); break;
+      case 't': e.preventDefault(); addTab(); break;
+      case 'w': e.preventDefault(); if (tabs.length > 1) closeTab(activeTabId); break;
       case '1': e.preventDefault(); setView('split'); break;
       case '2': e.preventDefault(); setView('editor-only'); break;
       case '3': e.preventDefault(); setView('preview-only'); break;
@@ -1043,51 +1096,56 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// === Resizable divider ===
+// ─── Resizable divider ──────────────────────────────────────
 const divider = document.getElementById('divider');
 let isDragging = false;
-
 divider.addEventListener('mousedown', () => {
-  isDragging = true;
-  divider.classList.add('dragging');
-  document.body.style.cursor = 'col-resize';
-  document.body.style.userSelect = 'none';
+  isDragging = true; divider.classList.add('dragging');
+  document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none';
 });
-
 document.addEventListener('mousemove', (e) => {
   if (!isDragging) return;
   const rect = mainEl.getBoundingClientRect();
-  const pct = ((e.clientX - rect.left) / rect.width) * 100;
-  const clamped = Math.max(20, Math.min(80, pct));
-  document.querySelector('.editor-pane').style.cssText = `flex: none; width: ${clamped}%;`;
+  const pct = Math.max(20, Math.min(80, ((e.clientX - rect.left) / rect.width) * 100));
+  document.querySelector('.editor-pane').style.cssText = `flex: none; width: ${pct}%;`;
   document.querySelector('.preview-pane').style.flex = '1';
 });
-
 document.addEventListener('mouseup', () => {
-  if (isDragging) {
-    isDragging = false;
-    divider.classList.remove('dragging');
-    document.body.style.cursor = '';
-    document.body.style.userSelect = '';
-  }
+  if (isDragging) { isDragging = false; divider.classList.remove('dragging'); document.body.style.cursor = ''; document.body.style.userSelect = ''; }
 });
 
-// === Sync scroll ===
-editor.addEventListener('scroll', () => {
-  const pct = editor.scrollTop / (editor.scrollHeight - editor.clientHeight || 1);
+// ─── Sync scroll ────────────────────────────────────────────
+editorEl.addEventListener('scroll', () => {
+  const pct = editorEl.scrollTop / (editorEl.scrollHeight - editorEl.clientHeight || 1);
   preview.scrollTop = pct * (preview.scrollHeight - preview.clientHeight);
 });
 
-// === Restore state ===
-const saved = localStorage.getItem('md-editor-content');
-if (saved) editor.value = saved;
+// ─── Restore state ──────────────────────────────────────────
 const savedView = localStorage.getItem('md-editor-view');
 if (savedView) setView(savedView);
 
-// === Init ===
+if (localStorage.getItem('md-preview-dark') === '1') {
+  togglePreviewDarkMode();
+}
+
+// ─── Init first tab ─────────────────────────────────────────
+const savedContent = localStorage.getItem('md-editor-content') || '';
+addTab('Untitled.md', savedContent, null);
+if (savedContent) {
+  const tab = getActiveTab();
+  if (tab) tab.modified = false;
+  renderTabs();
+}
+
 updatePreview();
 updateCursorPos();
-editor.focus();
+editorEl.focus();
+
+// Auto-save content to localStorage
+setInterval(() => {
+  const tab = getActiveTab();
+  if (tab) localStorage.setItem('md-editor-content', editorEl.value);
+}, 2000);
 </script>
 </body>
 </html>

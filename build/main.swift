@@ -2,12 +2,11 @@ import Cocoa
 import WebKit
 
 // ─── App Delegate ───────────────────────────────────────────────
-class AppDelegate: NSObject, NSApplicationDelegate {
+class AppDelegate: NSObject, NSApplicationDelegate, WKScriptMessageHandler {
     var window: NSWindow!
     var webView: WKWebView!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Window size
         let screenFrame = NSScreen.main?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1280, height: 800)
         let width: CGFloat = min(1400, screenFrame.width * 0.85)
         let height: CGFloat = min(900, screenFrame.height * 0.85)
@@ -27,18 +26,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.backgroundColor = NSColor(red: 0.11, green: 0.098, blue: 0.09, alpha: 1.0)
         window.isReleasedWhenClosed = false
 
-        // WebView configuration
+        // WebView configuration with message handlers for native file dialogs
         let config = WKWebViewConfiguration()
         config.preferences.setValue(true, forKey: "developerExtrasEnabled")
-
-        // Allow file access
         config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
+
+        let contentController = config.userContentController
+        contentController.add(self, name: "nativeOpen")
+        contentController.add(self, name: "nativeSave")
+        contentController.add(self, name: "nativeExport")
 
         webView = WKWebView(frame: window.contentView!.bounds, configuration: config)
         webView.autoresizingMask = [.width, .height]
         webView.setValue(false, forKey: "drawsBackground")
 
-        // Load the embedded HTML
         if let htmlPath = Bundle.main.path(forResource: "markdown-editor", ofType: "html") {
             let htmlURL = URL(fileURLWithPath: htmlPath)
             webView.loadFileURL(htmlURL, allowingReadAccessTo: htmlURL.deletingLastPathComponent())
@@ -46,8 +47,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         window.contentView?.addSubview(webView)
         window.makeKeyAndOrderFront(nil)
-
-        // Build menus
         setupMenus()
     }
 
@@ -55,6 +54,107 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
+    // ─── Native File Dialog Bridge ──────────────────────────────
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        switch message.name {
+        case "nativeOpen":
+            nativeOpenFile()
+        case "nativeSave":
+            if let body = message.body as? [String: String],
+               let content = body["content"],
+               let fileName = body["fileName"] {
+                nativeSaveFile(content: content, fileName: fileName)
+            }
+        case "nativeExport":
+            if let body = message.body as? [String: String],
+               let content = body["content"],
+               let fileName = body["fileName"] {
+                nativeExportHTML(content: content, fileName: fileName)
+            }
+        default:
+            break
+        }
+    }
+
+    func nativeOpenFile() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [
+            .init(filenameExtension: "md")!,
+            .init(filenameExtension: "markdown")!,
+            .init(filenameExtension: "txt")!,
+            .plainText
+        ]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.message = "Choose a Markdown file to open"
+
+        panel.beginSheetModal(for: window) { [weak self] response in
+            guard response == .OK, let url = panel.url else { return }
+            do {
+                let content = try String(contentsOf: url, encoding: .utf8)
+                let fileName = url.lastPathComponent
+                let filePath = url.path
+                let escapedContent = content
+                    .replacingOccurrences(of: "\\", with: "\\\\")
+                    .replacingOccurrences(of: "`", with: "\\`")
+                    .replacingOccurrences(of: "$", with: "\\$")
+                let js = "nativeDidOpenFile(`\(escapedContent)`, `\(fileName)`, `\(filePath)`);"
+                self?.webView.evaluateJavaScript(js, completionHandler: nil)
+            } catch {
+                let alert = NSAlert()
+                alert.messageText = "Could not open file"
+                alert.informativeText = error.localizedDescription
+                alert.runModal()
+            }
+        }
+    }
+
+    func nativeSaveFile(content: String, fileName: String) {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = fileName
+        panel.allowedContentTypes = [
+            .init(filenameExtension: "md")!,
+            .plainText
+        ]
+        panel.message = "Choose where to save your Markdown file"
+
+        panel.beginSheetModal(for: window) { [weak self] response in
+            guard response == .OK, let url = panel.url else { return }
+            do {
+                try content.write(to: url, atomically: true, encoding: .utf8)
+                let savedName = url.lastPathComponent
+                let savedPath = url.path
+                let js = "nativeDidSaveFile(`\(savedName)`, `\(savedPath)`);"
+                self?.webView.evaluateJavaScript(js, completionHandler: nil)
+            } catch {
+                let alert = NSAlert()
+                alert.messageText = "Could not save file"
+                alert.informativeText = error.localizedDescription
+                alert.runModal()
+            }
+        }
+    }
+
+    func nativeExportHTML(content: String, fileName: String) {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = fileName.replacingOccurrences(of: ".md", with: "") + ".html"
+        panel.allowedContentTypes = [.html]
+        panel.message = "Choose where to export the HTML file"
+
+        panel.beginSheetModal(for: window) { response in
+            guard response == .OK, let url = panel.url else { return }
+            do {
+                try content.write(to: url, atomically: true, encoding: .utf8)
+            } catch {
+                let alert = NSAlert()
+                alert.messageText = "Could not export file"
+                alert.informativeText = error.localizedDescription
+                alert.runModal()
+            }
+        }
+    }
+
+    // ─── Menus ──────────────────────────────────────────────────
     func setupMenus() {
         let mainMenu = NSMenu()
 
@@ -70,10 +170,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // File menu
         let fileMenuItem = NSMenuItem()
         let fileMenu = NSMenu(title: "File")
-        fileMenu.addItem(withTitle: "Open...", action: #selector(triggerOpen), keyEquivalent: "o")
-        fileMenu.addItem(withTitle: "Save", action: #selector(triggerSave), keyEquivalent: "s")
+        fileMenu.addItem(withTitle: "New Tab", action: #selector(triggerNewTab), keyEquivalent: "t")
         fileMenu.addItem(NSMenuItem.separator())
-        fileMenu.addItem(withTitle: "Export as HTML", action: #selector(triggerExport), keyEquivalent: "e")
+        fileMenu.addItem(withTitle: "Open...", action: #selector(triggerOpen), keyEquivalent: "o")
+        fileMenu.addItem(withTitle: "Save...", action: #selector(triggerSave), keyEquivalent: "s")
+        fileMenu.addItem(NSMenuItem.separator())
+        fileMenu.addItem(withTitle: "Export as HTML...", action: #selector(triggerExport), keyEquivalent: "e")
         fileMenuItem.submenu = fileMenu
         mainMenu.addItem(fileMenuItem)
 
@@ -100,6 +202,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let previewItem = viewMenu.addItem(withTitle: "Preview Only", action: #selector(viewPreview), keyEquivalent: "3")
         previewItem.keyEquivalentModifierMask = [.command]
         viewMenu.addItem(NSMenuItem.separator())
+        viewMenu.addItem(withTitle: "Toggle Dark Preview", action: #selector(triggerDarkMode), keyEquivalent: "d")
+        viewMenu.addItem(NSMenuItem.separator())
         viewMenu.addItem(withTitle: "Enter Full Screen", action: #selector(NSWindow.toggleFullScreen(_:)), keyEquivalent: "f")
         viewMenuItem.submenu = viewMenu
         mainMenu.addItem(viewMenuItem)
@@ -118,21 +222,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func showAbout() {
         let alert = NSAlert()
         alert.messageText = "Inkwell"
-        alert.informativeText = "A beautiful Markdown editor for macOS.\n\nVersion 1.0"
+        alert.informativeText = "A beautiful Markdown editor for macOS.\n\nVersion 1.1"
         alert.alertStyle = .informational
         alert.runModal()
     }
 
+    @objc func triggerNewTab() {
+        webView.evaluateJavaScript("addTab()", completionHandler: nil)
+    }
+
     @objc func triggerOpen() {
-        webView.evaluateJavaScript("openFile()", completionHandler: nil)
+        nativeOpenFile()
     }
 
     @objc func triggerSave() {
-        webView.evaluateJavaScript("saveFile()", completionHandler: nil)
+        webView.evaluateJavaScript("triggerNativeSave()", completionHandler: nil)
     }
 
     @objc func triggerExport() {
-        webView.evaluateJavaScript("exportHTML()", completionHandler: nil)
+        webView.evaluateJavaScript("triggerNativeExport()", completionHandler: nil)
+    }
+
+    @objc func triggerDarkMode() {
+        webView.evaluateJavaScript("togglePreviewDarkMode()", completionHandler: nil)
     }
 
     @objc func viewSplit() {

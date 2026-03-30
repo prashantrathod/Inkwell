@@ -8,14 +8,16 @@ A beautiful, native Markdown editor for macOS with live preview.
 ## Features
 
 - **Live Preview** — side-by-side editor and rendered preview with synced scrolling
+- **Tabs** — work on multiple documents at once (`⌘T` new tab, `⌘W` close tab)
+- **Dark Mode Preview** — toggle between light and dark preview themes (`⌘D`)
+- **Native File Dialogs** — open and save files via Finder with full path control
+- **Rename In-Place** — click the filename in the toolbar to rename it inline
 - **Native macOS App** — lightweight WKWebView-based app, no Electron bloat
 - **Rich Toolbar** — SVG icons with hover tooltips showing keyboard shortcuts
-- **Keyboard Shortcuts** — `⌘B` bold, `⌘I` italic, `⌘K` link, `⌘E` code, `⌘S` save, `⌘O` open
 - **View Modes** — split, editor-only, or preview-only (`⌘1` / `⌘2` / `⌘3`)
-- **File Operations** — open `.md` files, save markdown, export as styled HTML
 - **Resizable Panes** — drag the divider to adjust the split
 - **Auto-Save** — content persists in localStorage between sessions
-- **Status Bar** — cursor position, word count, character count
+- **Status Bar** — file path, cursor position, word count, character count
 - **Custom App Icon** — amber pen nib on dark background
 
 ## Install
@@ -43,12 +45,16 @@ The built app will be at `build/Inkwell.app` and the installer at `Inkwell.dmg`.
 
 | Action | Shortcut |
 |---|---|
+| New Tab | `⌘T` |
+| Close Tab | `⌘W` |
+| Open File | `⌘O` |
+| Save File | `⌘S` |
+| Export HTML | `⌘E` |
 | Bold | `⌘B` |
 | Italic | `⌘I` |
 | Inline Code | `⌘E` |
 | Insert Link | `⌘K` |
-| Save | `⌘S` |
-| Open | `⌘O` |
+| Dark Preview | `⌘D` |
 | Split View | `⌘1` |
 | Editor Only | `⌘2` |
 | Preview Only | `⌘3` |
@@ -58,7 +64,7 @@ The built app will be at `build/Inkwell.app` and the installer at `Inkwell.dmg`.
 ```
 ├── markdown-editor.html   # The full editor UI (HTML/CSS/JS)
 ├── build/
-│   ├── main.swift         # Native macOS app (WKWebView wrapper)
+│   ├── main.swift         # Native macOS app with WKWebView + native file dialog bridge
 │   ├── gen_icon.swift     # App icon generator (Core Graphics)
 │   ├── Info.plist         # App bundle metadata
 │   └── build.sh           # Build script
