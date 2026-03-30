@@ -72,18 +72,13 @@ The built app will be at `build/Inkwell.app` and the installer at `Inkwell.dmg`.
 ```
 
 ### Featurelist to add to inkwell
-- AI tool build in - linked to local or cloud LLM
-- Update icon
-- Change name, although i kind of like it
-- Ask Claude what it would improve in this editor? 
-- what are some premium features that can be added to this editor? 
-- Add the ability to rename the file
-- Add the ability to add a new tab, to work on multiple tabs / docs at the same time. 
-- Change the about section to add my name and Claudes
-- Allow ability to open the finder window where the file is saved
-- Dark mode for the preview mode
-- Where is the file being saved to? 
-- Why does the open file button not work? - can we get this to open a finder window?
+- AI tool build in - linked to local or cloud LLM 
+- what are some premium features that can be added to this editor? - **Feedback**
+- Add the ability to rename the file - **Added**
+- Add the ability to add a new tab, to work on multiple tabs / docs at the same time.  - **Added**
+- Allow ability to open the finder window where the file is saved - **Added**
+- Dark mode for the preview mode - **Added**
+- Add open button fix to finder window - **Added**
 
 ## License
 
